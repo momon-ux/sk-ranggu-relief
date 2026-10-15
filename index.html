@@ -39,9 +39,9 @@
     }
   </script>
 </head>
-<body class="bg-slate-100/80 min-h-screen text-slate-800 antialiased flex flex-col">
+<body class="bg-slate-100/90 min-h-screen text-slate-800 antialiased flex flex-col font-sans">
 
-  <!-- ================= TOP NAVBAR & SCHOOL PROFILE (REDPEN 2.0 STYLE) ================= -->
+  <!-- ================= TOP NAVBAR & SCHOOL PROFILE ================= -->
   <header id="app-header" class="bg-gradient-to-r from-brand-950 via-brand-900 to-indigo-900 text-white shadow-md border-b border-indigo-800 sticky top-0 z-40">
     <div class="max-w-[1700px] mx-auto px-4 py-2.5 flex items-center justify-between">
       
@@ -56,7 +56,7 @@
             <span class="text-xs font-black tracking-wider uppercase text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/30">
               RedPen 2.0 • RELIEF
             </span>
-            <span class="text-[11px] text-indigo-200 hidden sm:inline">Sistem Pengurusan Guru Ganti Pintar</span>
+            <span class="text-[11px] text-indigo-200 hidden sm:inline">Pengurusan Guru Ganti Pintar</span>
           </div>
           <h1 class="text-sm sm:text-base font-extrabold tracking-tight uppercase leading-snug">
             SEKOLAH KEBANGSAAN RANGGU, TAWAU
@@ -68,7 +68,7 @@
       </div>
 
       <!-- Profil Pentadbir & Status Kuota RedPen -->
-      <div class="flex items-center gap-3 sm:gap-4">
+      <div class="flex items-center gap-2 sm:gap-4">
         <!-- Jam Langsung & Sesi -->
         <div class="text-right hidden lg:block bg-black/20 px-3 py-1.5 rounded-lg border border-white/5">
           <div class="text-[10px] text-indigo-200 font-semibold uppercase">Waktu Semasa</div>
@@ -110,7 +110,7 @@
   <!-- ================= LAYOUT UTAMA (SIDEBAR + KANDUNGAN) ================= -->
   <div class="flex-1 flex max-w-[1700px] w-full mx-auto">
     
-    <!-- SIDEBAR KIRI (MENIRU PAPARAN REDPEN) -->
+    <!-- SIDEBAR KIRI (NAVIGASI PENUH BERFUNGSI) -->
     <aside id="app-sidebar" class="w-56 bg-brand-950 text-indigo-200 flex-shrink-0 hidden xl:flex flex-col border-r border-indigo-900/60 p-3 space-y-4 shadow-sm select-none">
       
       <!-- Profil Mini -->
@@ -119,45 +119,41 @@
           <img src="assets/logo-skrg.png" class="w-full h-full object-contain" alt="SKR">
         </div>
         <div class="text-xs font-bold text-white truncate">SK RANGGU TAWAU</div>
-        <div class="text-[10px] text-indigo-300">Sesi 2026 • 54 Guru</div>
+        <div class="text-[10px] text-indigo-300">Sesi 2026 • 54 Guru Aktif</div>
       </div>
 
-      <!-- Menu Navigasi -->
+      <!-- Menu Navigasi Utama -->
       <nav class="space-y-1 text-xs font-medium">
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition">
-          <i class="fa-solid fa-gauge-high w-4 text-indigo-400"></i>
-          <span>Dashboard Utama</span>
-        </a>
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition">
+        <button type="button" data-view="relief" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/30 transition text-left">
+          <i class="fa-solid fa-user-clock w-4 text-amber-300"></i>
+          <span>Jadual Relief (Ganti)</span>
+        </button>
+
+        <button type="button" data-view="master" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition text-left">
           <i class="fa-solid fa-calendar-days w-4 text-indigo-400"></i>
           <span>Jadual Waktu Induk</span>
-        </a>
-        <!-- Aktif -->
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/30 transition">
-          <i class="fa-solid fa-user-clock w-4 text-amber-300"></i>
-          <span>Jadual Relief (Guru Ganti)</span>
-        </a>
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition">
-          <i class="fa-solid fa-book-open-reader w-4 text-indigo-400"></i>
-          <span>Rekod e-RPH</span>
-        </a>
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition">
-          <i class="fa-solid fa-users w-4 text-indigo-400"></i>
-          <span>Senarai Guru & Staf</span>
-        </a>
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition">
+        </button>
+
+        <button type="button" data-view="records" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition text-left">
+          <i class="fa-solid fa-clock-rotate-left w-4 text-indigo-400"></i>
+          <span>Senarai Rekod Relief</span>
+        </button>
+
+        <button type="button" data-view="analytics" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition text-left">
           <i class="fa-solid fa-chart-pie w-4 text-indigo-400"></i>
-          <span>Laporan & Analisis</span>
-        </a>
-        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition">
-          <i class="fa-solid fa-sliders w-4 text-indigo-400"></i>
-          <span>Tetapan Pentadbir</span>
-        </a>
+          <span>Analisis & Bebanan</span>
+        </button>
+
+        <button type="button" data-view="staff" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition text-left">
+          <i class="fa-solid fa-users w-4 text-indigo-400"></i>
+          <span>Senarai 54 Guru</span>
+        </button>
       </nav>
 
       <!-- Footer Info -->
       <div class="mt-auto pt-4 border-t border-indigo-900/60 text-[10px] text-indigo-400 space-y-1">
-        <div>Zon Balung, Tawau</div>
+        <div class="font-bold text-white">SK Ranggu, Tawau</div>
+        <div class="text-[9px] text-indigo-400">Peti Surat 842, 91008 Tawau</div>
         <div class="text-[9px] text-indigo-500">Versi 2.4.0 • Build 2026</div>
       </div>
     </aside>
@@ -165,7 +161,7 @@
     <!-- KAWASAN KANDUNGAN UTAMA -->
     <main class="flex-1 p-3 sm:p-5 lg:p-6 overflow-y-auto space-y-5">
       
-      <!-- SUB-NAV / TAB HEADER -->
+      <!-- SUB-NAV HEADER TABS (PERSIS VIDEO REDPEN) -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div class="flex items-center gap-2.5">
@@ -173,342 +169,414 @@
               <i class="fa-solid fa-clipboard-user"></i>
             </div>
             <div>
-              <h2 class="text-lg font-extrabold text-slate-900 tracking-tight">Pengurusan Guru Ganti (Relief)</h2>
-              <p class="text-xs text-slate-500">Penjanaan jadual relief pintar, imbangan bebanan guru & slip edaran rasmi</p>
+              <h2 id="main-view-title" class="text-lg font-extrabold text-slate-900 tracking-tight">Pengurusan Guru Ganti (Relief)</h2>
+              <p id="main-view-desc" class="text-xs text-slate-500">Penjanaan jadual relief pintar, semakan jadual waktu mengajar guru & slip edaran rasmi</p>
             </div>
           </div>
 
-          <!-- Tabs (Persis Video) -->
-          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-            <button class="px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm font-bold transition">
-              Jana Relief Baru
+          <!-- Top Action Tabs -->
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+            <button type="button" data-view="relief" class="top-tab-btn px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-user-clock text-[11px]"></i> Jana Relief Baru
             </button>
-            <a href="#saved-records-section" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
-              Senarai Rekod Relief
-            </a>
-            <button onclick="window.print()" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
+            <button type="button" data-view="master" class="top-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-days text-[11px]"></i> Jadual Waktu Induk
+            </button>
+            <button type="button" data-view="records" class="top-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-clock-rotate-left text-[11px]"></i> Rekod Relief
+            </button>
+            <button type="button" data-view="analytics" class="top-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie text-[11px]"></i> Analisis
+            </button>
+            <button type="button" id="btn-top-print" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold transition flex items-center gap-1 border border-indigo-200">
               <i class="fa-solid fa-print text-[11px]"></i> Cetak (PDF)
             </button>
           </div>
         </div>
 
-        <!-- ================= LANGKAH 1: PILIH GURU TIDAK HADIR ================= -->
-        <div id="control-panel-step1" class="pt-4 space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h3 class="text-xs font-extrabold tracking-wider text-indigo-900 uppercase flex items-center gap-2">
-              <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
-              PILIH GURU TIDAK HADIR
-            </h3>
-            <div class="flex items-center gap-2">
-              <button 
-                type="button" 
-                id="btn-quick-demo" 
-                class="text-xs font-bold text-amber-800 bg-amber-100/80 hover:bg-amber-200 border border-amber-300 px-3 py-1 rounded-lg transition flex items-center gap-1.5 shadow-sm"
-                title="Muat contoh 2 guru tidak hadir seperti di dalam video"
-              >
-                <i class="fa-solid fa-play text-[10px] text-amber-600"></i>
-                <span>Contoh Demo Video (2 Guru)</span>
-              </button>
-              <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
-                <span id="absent-count">0</span> Guru Dipilih
-              </span>
-            </div>
-          </div>
+        <!-- ================= SEKSYEN 1: MOD JADUAL RELIEF ================= -->
+        <div id="view-relief-content" class="space-y-5 pt-3">
+          
+          <!-- LANGKAH 1: PILIH GURU TIDAK HADIR -->
+          <div id="control-panel-step1" class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-xs font-extrabold tracking-wider text-indigo-900 uppercase flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                PILIH GURU TIDAK HADIR
+              </h3>
+              
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Butang Contoh Demo Video Pantas -->
+                <button 
+                  type="button" 
+                  id="btn-quick-demo" 
+                  class="text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3 py-1 rounded-lg transition flex items-center gap-1.5 shadow-sm"
+                  title="Muat contoh 2 guru tidak hadir seperti di dalam video"
+                >
+                  <i class="fa-solid fa-play text-[10px] text-amber-700"></i>
+                  <span>Contoh Demo Video (2 Guru)</span>
+                </button>
 
-          <!-- Borang Pemilihan Guru -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200">
-            
-            <!-- 1. Tarikh -->
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
-                Tarikh Persekolahan
-              </label>
-              <div class="relative">
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
+                  <span id="absent-count">0</span> Guru Dipilih
+                </span>
+              </div>
+            </div>
+
+            <!-- Borang Pemilihan Guru -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200">
+              
+              <!-- 1. Tarikh -->
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Tarikh Persekolahan
+                </label>
                 <input 
                   type="date" 
                   id="input-date" 
                   class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
+                <div id="badge-day-name" class="mt-1 text-[10px] font-bold text-indigo-600">Hari Isnin</div>
               </div>
-              <div id="badge-day-name" class="mt-1 text-[10px] font-bold text-indigo-600">Hari Isnin</div>
-            </div>
 
-            <!-- 2. Sesi Dropdown -->
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
-                Sesi
-              </label>
-              <select id="select-session" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <option value="Semua">Semua Sesi (Pagi & Petang)</option>
-                <option value="Pagi" selected>Sesi Pagi</option>
-                <option value="Petang">Sesi Petang</option>
-              </select>
-            </div>
+              <!-- 2. Sesi Dropdown -->
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Sesi
+                </label>
+                <select id="select-session" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                  <option value="Semua">Semua Sesi (Pagi & Petang)</option>
+                  <option value="Pagi" selected>Sesi Pagi</option>
+                  <option value="Petang">Sesi Petang</option>
+                </select>
+              </div>
 
-            <!-- 3. Cari Guru -->
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
-                Cari Guru Tidak Hadir
-              </label>
-              <select id="select-absent-teacher" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <!-- Diisi oleh app.js -->
-              </select>
-            </div>
-
-            <!-- 4. Sebab & Butang Tambah -->
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
-                Sebab Tidak Hadir
-              </label>
-              <div class="flex items-center gap-2">
-                <select id="select-absent-reason" class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <!-- 3. Cari Guru -->
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Cari Guru Tidak Hadir
+                </label>
+                <select id="select-absent-teacher" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                   <!-- Diisi oleh app.js -->
                 </select>
-                <button 
-                  type="button" 
-                  id="btn-add-absent" 
-                  class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs transition shadow-sm hover:shadow flex items-center justify-center"
-                  title="Tambah Guru ke Senarai Tidak Hadir"
-                >
-                  <i class="fa-solid fa-plus"></i>
+              </div>
+
+              <!-- 4. Sebab & Butang Tambah -->
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Sebab Tidak Hadir
+                </label>
+                <div class="flex items-center gap-2">
+                  <select id="select-absent-reason" class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <!-- Diisi oleh app.js -->
+                  </select>
+                  <button 
+                    type="button" 
+                    id="btn-add-absent" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs transition shadow-sm hover:shadow flex items-center justify-center"
+                    title="Tambah Guru ke Senarai Tidak Hadir"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Senarai Tag Guru Tidak Hadir -->
+            <div class="bg-white p-3 rounded-xl border border-slate-200">
+              <div class="text-[10px] font-bold uppercase text-slate-500 mb-2">Senarai Guru Tidak Hadir Hari Ini:</div>
+              <div id="absent-chips-container" class="flex flex-wrap gap-2 min-h-[32px] items-center">
+                <!-- Diisi dinamik -->
+              </div>
+            </div>
+
+            <!-- Tetapan Kuota & Bebanan Seimbang -->
+            <div class="flex flex-wrap items-center justify-between gap-4 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 text-xs">
+              
+              <div class="flex flex-wrap items-center gap-4">
+                <!-- Had Maksima -->
+                <div class="flex items-center gap-2">
+                  <label for="setting-max-relief" class="font-bold text-slate-700">Had Maksima Relief:</label>
+                  <input 
+                    type="number" 
+                    id="setting-max-relief" 
+                    value="2" 
+                    min="1" 
+                    max="5" 
+                    class="w-14 bg-white border border-slate-300 rounded-md px-2 py-1 text-center font-bold font-mono focus:ring-1 focus:ring-indigo-500"
+                  >
+                  <span class="text-[10px] text-slate-500">Waktu / Guru</span>
+                </div>
+
+                <!-- Auto Pilih Guru Toggle -->
+                <div class="flex items-center gap-2">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="setting-auto-assign" checked class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                  <span class="font-bold text-slate-700">Auto Pilih Guru</span>
+                </div>
+
+                <!-- Pecahan Waktu -->
+                <div class="flex items-center gap-2">
+                  <label for="setting-slot-split" class="font-bold text-slate-700">Pecahan Masa:</label>
+                  <select id="setting-slot-split" class="bg-white border border-slate-300 rounded-md px-2 py-1 text-xs font-semibold">
+                    <option value="30" selected>30 Minit (1 Waktu)</option>
+                    <option value="60">60 Minit (2 Waktu)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter Waktu Berturut-turut -->
+              <div class="flex items-center gap-3">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer" title="Mengelakkan guru yang baru lepas 2 jam kelas berturut-turut menerima relief">
+                  <input type="checkbox" id="setting-avoid-continuous" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-[11px] font-semibold text-slate-700">Elak Kelas Berturut-turut Tanpa Rehat</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="setting-prioritize-option" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-[11px] font-semibold text-slate-700">Utamakan Panitia Sama</span>
+                </label>
+              </div>
+
+            </div>
+
+            <!-- BUTANG JANA JADUAL RELIEF -->
+            <div id="control-panel-step2" class="pt-2 text-center">
+              <button 
+                type="button" 
+                id="btn-generate-relief"
+                class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-600 via-indigo-700 to-brand-800 hover:from-indigo-700 hover:to-brand-900 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-indigo-600/30 hover:shadow-xl transition-all flex items-center justify-center gap-3 mx-auto uppercase tracking-wide group"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-300 group-hover:rotate-12 transition-transform text-base"></i>
+                <span>2. JANA JADUAL RELIEF SEKARANG</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ================= SEKSYEN GRID JADUAL WAKTU & RELIEF (SENTIASA TERSEDIA) ================= -->
+          <div id="draft-section" class="space-y-4 pt-4 border-t border-slate-200">
+            
+            <!-- Bar Pemilihan Hari Cepat (Isnin hingga Jumaat) -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-indigo-900 to-brand-950 p-3 rounded-xl text-white shadow-sm">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-calendar-week text-amber-300"></i>
+                <span class="text-xs font-bold uppercase tracking-wider">Pilih Hari Paparan Jadual:</span>
+              </div>
+              <div id="quick-day-tabs" class="flex flex-wrap items-center gap-1 text-xs font-bold">
+                <button type="button" data-day="1" class="day-tab-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition">ISNIN</button>
+                <button type="button" data-day="2" class="day-tab-btn px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 transition">SELASA</button>
+                <button type="button" data-day="3" class="day-tab-btn px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 transition">RABU</button>
+                <button type="button" data-day="4" class="day-tab-btn px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 transition">KHAMIS</button>
+                <button type="button" data-day="5" class="day-tab-btn px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 transition">JUMAAT</button>
+              </div>
+            </div>
+
+            <!-- Toolbar Atas Grid -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-extrabold text-slate-900 uppercase">
+                    Jadual Waktu Mengajar & Relief Harian
+                  </h3>
+                  <span id="grid-status-badge" class="bg-indigo-100 text-indigo-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-indigo-200">
+                    JADUAL INDUK
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  Kotak <strong class="text-blue-600">Biru</strong> = Kelas Mengajar Sendiri. Kotak <strong class="text-orange-600">Oren</strong> = Tugasan Relief (Boleh klik untuk tukar/pindah).
+                </p>
+              </div>
+
+              <!-- Butang Penukar Pandangan & Aksi -->
+              <div id="view-controls" class="flex flex-wrap items-center gap-2">
+                <!-- Penukar Senarai vs Grid -->
+                <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
+                  <button type="button" id="btn-view-list" class="px-3 py-1.5 rounded-lg bg-white text-slate-700 shadow-sm transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-ul"></i> Senarai
+                  </button>
+                  <button type="button" id="btn-view-grid" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-table-cells"></i> Grid Berwarna
+                  </button>
+                </div>
+
+                <!-- Aksi Tambahan -->
+                <button type="button" id="btn-reset" class="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold text-xs transition">
+                  <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Reset
+                </button>
+
+                <button type="button" id="btn-save-db" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-floppy-disk"></i> Simpan
+                </button>
+
+                <button type="button" id="btn-print-pdf" class="px-3.5 py-1.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-file-pdf"></i> Cetak Slip
                 </button>
               </div>
             </div>
 
-          </div>
-
-          <!-- Container Tag Guru Tidak Hadir (Persis Video) -->
-          <div class="bg-white p-3 rounded-xl border border-slate-200">
-            <div class="text-[10px] font-bold uppercase text-slate-500 mb-2">Senarai Guru Tidak Hadir Hari Ini:</div>
-            <div id="absent-chips-container" class="flex flex-wrap gap-2 min-h-[32px] items-center">
-              <!-- Diisi secara dinamik -->
+            <!-- Statistik Ringkas -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div class="bg-purple-50 border border-purple-200 p-2.5 rounded-xl">
+                <div class="text-[10px] font-bold text-purple-700 uppercase">Guru Tidak Hadir</div>
+                <div id="stat-absent-total" class="text-lg font-black text-purple-900 font-mono">0</div>
+              </div>
+              <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl">
+                <div class="text-[10px] font-bold text-amber-700 uppercase">Waktu Perlu Relief</div>
+                <div id="stat-vacant-total" class="text-lg font-black text-amber-900 font-mono">0</div>
+              </div>
+              <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
+                <div class="text-[10px] font-bold text-emerald-700 uppercase">Relief Lengkap Ditugaskan</div>
+                <div id="stat-assigned-total" class="text-lg font-black text-emerald-900 font-mono">0</div>
+              </div>
+              <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-xl">
+                <div class="text-[10px] font-bold text-blue-700 uppercase">Status Jadual</div>
+                <div id="stat-system-status" class="text-xs font-bold text-blue-900 mt-1 flex items-center justify-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>Jadual Aktif</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Tetapan Enjin Relief (Had Maksima & Auto-Assign) -->
-          <div class="flex flex-wrap items-center justify-between gap-4 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 text-xs">
-            
-            <div class="flex flex-wrap items-center gap-4">
-              <!-- Had Maksima -->
-              <div class="flex items-center gap-2">
-                <label for="setting-max-relief" class="font-bold text-slate-700">Had Maksima Relief:</label>
-                <input 
-                  type="number" 
-                  id="setting-max-relief" 
-                  value="2" 
-                  min="1" 
-                  max="5" 
-                  class="w-14 bg-white border border-slate-300 rounded-md px-2 py-1 text-center font-bold font-mono focus:ring-1 focus:ring-indigo-500"
-                >
-                <span class="text-[10px] text-slate-500">Waktu / Guru</span>
+            <!-- Petunjuk Warna (Legend) -->
+            <div class="flex flex-wrap items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+              <span class="font-bold text-slate-600 text-[11px] uppercase">Petunjuk Warna:</span>
+              <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 rounded bg-blue-500 border border-blue-600 inline-block shadow-sm"></span>
+                <span class="text-slate-700 font-semibold text-[11px]">Jadual Asal (Kelas Sendiri)</span>
               </div>
-
-              <!-- Auto Pilih Guru Toggle -->
-              <div class="flex items-center gap-2">
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" id="setting-auto-assign" checked class="sr-only peer">
-                  <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-                <span class="font-bold text-slate-700">Auto Pilih Guru</span>
+              <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 rounded bg-orange-500 border border-orange-600 inline-block shadow-sm"></span>
+                <span class="text-slate-700 font-bold text-[11px] text-orange-700">Jadual Relief (Tugasan Ganti)</span>
               </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 rounded bg-emerald-100 border-2 border-dashed border-emerald-600 inline-block"></span>
+                <span class="text-emerald-800 font-bold text-[11px]">Slot Lapang & Sesuai (Klik untuk Pindah)</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 rounded bg-purple-100 border border-purple-300 inline-block"></span>
+                <span class="text-purple-800 font-semibold text-[11px]">Guru Tidak Hadir</span>
+              </div>
+            </div>
 
-              <!-- Pecahan Waktu -->
+            <!-- Banner Maklumat Interaktif: MOD PINDAH RELIEF -->
+            <div id="reassign-active-banner" class="hidden bg-gradient-to-r from-amber-600 to-orange-600 text-white p-3.5 rounded-xl shadow-md border border-orange-400 text-xs flex items-center justify-between gap-3 animate-pulse">
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-arrows-rotate text-lg text-amber-200"></i>
+                <div id="reassign-banner-details">
+                  <!-- Diisi dinamik oleh app.js -->
+                </div>
+              </div>
+              <button type="button" id="btn-cancel-reassign" class="bg-black/30 hover:bg-black/50 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition border border-white/20 whitespace-nowrap">
+                <i class="fa-solid fa-xmark mr-1"></i> Batal Pindah
+              </button>
+            </div>
+
+            <!-- Penapis Sesi & Carian Guru -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
               <div class="flex items-center gap-2">
-                <label for="setting-slot-split" class="font-bold text-slate-700">Pecahan Masa:</label>
-                <select id="setting-slot-split" class="bg-white border border-slate-300 rounded-md px-2 py-1 text-xs font-semibold">
-                  <option value="30" selected>30 Minit (1 Waktu)</option>
-                  <option value="60">60 Minit (2 Waktu)</option>
+                <label class="text-[11px] font-bold text-slate-600 uppercase">Tapis Sesi Grid:</label>
+                <select id="filter-grid-session" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold">
+                  <option value="Semua">Semua Sesi (54 Guru)</option>
+                  <option value="Pagi" selected>Sesi Pagi Sahaja</option>
+                  <option value="Petang">Sesi Petang Sahaja</option>
                 </select>
               </div>
+
+              <div class="relative w-64">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                <input 
+                  type="text" 
+                  id="search-teacher-grid" 
+                  placeholder="Cari nama guru dalam jadual..." 
+                  class="w-full bg-white border border-slate-300 rounded-lg pl-8 pr-3 py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                >
+              </div>
             </div>
 
-            <!-- Filter Khas Bebanan Seimbang (Kritikal mengikut Narasi Video) -->
-            <div class="flex items-center gap-3">
-              <label class="inline-flex items-center gap-1.5 cursor-pointer" title="Mengelakkan guru yang baru lepas 2 jam kelas berturut-turut menerima relief">
-                <input type="checkbox" id="setting-avoid-continuous" checked class="rounded text-indigo-600 focus:ring-indigo-500">
-                <span class="text-[11px] font-semibold text-slate-700">Elak Kelas Berturut-turut Tanpa Rehat</span>
-              </label>
-              <label class="inline-flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="setting-prioritize-option" checked class="rounded text-indigo-600 focus:ring-indigo-500">
-                <span class="text-[11px] font-semibold text-slate-700">Utamakan Panitia Sama</span>
-              </label>
+            <!-- 1. PAPARAN GRID BERWARNA (HERO FEATURE - SENTIASA DIPAPARKAN) -->
+            <div id="grid-view-container" class="space-y-2">
+              <!-- Table Matrix dijana oleh app.js -->
             </div>
 
-          </div>
+            <!-- 2. PAPARAN SENARAI (LIST VIEW) -->
+            <div id="list-view-container" class="hidden space-y-2">
+              <!-- Table Senarai dijana oleh app.js -->
+            </div>
 
-          <!-- ================= LANGKAH 2: BUTANG JANA JADUAL RELIEF ================= -->
-          <div id="control-panel-step2" class="pt-2 text-center">
-            <button 
-              type="button" 
-              id="btn-generate-relief"
-              class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-600 via-indigo-700 to-brand-800 hover:from-indigo-700 hover:to-brand-900 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-indigo-600/30 hover:shadow-xl transition-all flex items-center justify-center gap-3 mx-auto uppercase tracking-wide group"
-            >
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-300 group-hover:rotate-12 transition-transform text-base"></i>
-              <span>2. JANA JADUAL RELIEF SEKARANG</span>
-            </button>
           </div>
 
         </div>
-      </div>
 
-      <!-- ================= LANGKAH 3: PRATONTON JADUAL (DRAF) ================= -->
-      <section id="draft-section" class="hidden space-y-4">
-        
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-4">
-          
-          <!-- Toolbar Atas Pratonton -->
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <!-- ================= SEKSYEN 2: JADUAL WAKTU INDUK SEKOLAH ================= -->
+        <div id="view-master-content" class="hidden space-y-4 pt-3">
+          <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-sm font-extrabold text-slate-900 uppercase">
-                  Pratonton Jadual (Draf - Pecahan 30 Minit)
-                </h3>
-                <span class="bg-emerald-100 text-emerald-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-emerald-200">
-                  AUTO-GENERATED
-                </span>
-              </div>
-              <p class="text-xs text-slate-500 mt-0.5">
-                Semak pembahagian relief di bawah. Klik mana-mana kotak oren untuk memindahkan tugasan relief secara interaktif.
-              </p>
+              <h3 class="font-bold text-sm text-slate-900">Jadual Waktu Induk Sekolah Kebangsaan Ranggu 2026</h3>
+              <p class="text-xs text-slate-500">654 slot mengajar rasmi merangkumi semua subjek dan kelas Tahap 2 & Tahap 1</p>
             </div>
-
-            <!-- Butang Penukar Pandangan & Aksi -->
-            <div id="view-controls" class="flex flex-wrap items-center gap-2">
-              
-              <!-- Penukar Senarai vs Grid -->
-              <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
-                <button type="button" id="btn-view-list" class="px-3 py-1.5 rounded-lg bg-white text-slate-700 shadow-sm transition flex items-center gap-1.5">
-                  <i class="fa-solid fa-list-ul"></i> Senarai
-                </button>
-                <button type="button" id="btn-view-grid" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition flex items-center gap-1.5">
-                  <i class="fa-solid fa-table-cells"></i> Grid Berwarna
-                </button>
-              </div>
-
-              <!-- Aksi Tambahan -->
-              <button type="button" id="btn-reset" class="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold text-xs transition">
-                <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Batal & Reset
-              </button>
-
-              <button type="button" id="btn-save-db" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan ke Database
-              </button>
-
-              <button type="button" id="btn-print-pdf" class="px-3.5 py-1.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
-                <i class="fa-solid fa-file-pdf"></i> Cetak Slip (PDF)
-              </button>
-
+            <div class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200">
+              654 Jumlah Slot
             </div>
           </div>
 
-          <!-- Statistik Ringkas (Chips) -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-            <div class="bg-purple-50 border border-purple-200 p-2.5 rounded-xl">
-              <div class="text-[10px] font-bold text-purple-700 uppercase">Guru Tidak Hadir</div>
-              <div id="stat-absent-total" class="text-lg font-black text-purple-900 font-mono">0</div>
-            </div>
-            <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl">
-              <div class="text-[10px] font-bold text-amber-700 uppercase">Waktu Perlu Relief</div>
-              <div id="stat-vacant-total" class="text-lg font-black text-amber-900 font-mono">0</div>
-            </div>
-            <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
-              <div class="text-[10px] font-bold text-emerald-700 uppercase">Relief Lengkap Ditugaskan</div>
-              <div id="stat-assigned-total" class="text-lg font-black text-emerald-900 font-mono">0</div>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-xl">
-              <div class="text-[10px] font-bold text-blue-700 uppercase">Status Sistem</div>
-              <div class="text-xs font-bold text-blue-900 mt-1 flex items-center justify-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span>Optimum & Adil</span>
-              </div>
-            </div>
+          <!-- Master Timetable Container -->
+          <div id="master-timetable-container" class="overflow-x-auto">
+            <!-- Diisi dinamik -->
           </div>
+        </div>
 
-          <!-- Penunjuk Petunjuk Warna (Legend) -->
-          <div class="flex flex-wrap items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-            <span class="font-bold text-slate-600 text-[11px] uppercase">Petunjuk Warna:</span>
-            <div class="flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded bg-blue-500 border border-blue-600 inline-block shadow-sm"></span>
-              <span class="text-slate-700 font-semibold text-[11px]">Jadual Asal (Kelas Sendiri)</span>
+        <!-- ================= SEKSYEN 3: REKOD RELIEF TERSIMPAN ================= -->
+        <div id="view-records-content" class="hidden space-y-4 pt-3">
+          <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900">Arkib Rekod Jadual Relief Terdahulu</h3>
+              <p class="text-xs text-slate-500">Jadual relief yang telah disimpan ke pangkalan data tempatan (LocalStorage)</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded bg-orange-500 border border-orange-600 inline-block shadow-sm"></span>
-              <span class="text-slate-700 font-bold text-[11px] text-orange-700">Jadual Relief (Tugasan Ganti)</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded bg-emerald-100 border-2 border-dashed border-emerald-600 inline-block"></span>
-              <span class="text-emerald-800 font-bold text-[11px]">Slot Lapang & Sesuai (Klik untuk Pindah)</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded bg-purple-100 border border-purple-300 inline-block"></span>
-              <span class="text-purple-800 font-semibold text-[11px]">Guru Tidak Hadir</span>
-            </div>
-          </div>
-
-          <!-- Banner Maklumat Interaktif: MOD PINDAH RELIEF (Muncul apabila user klik kotak oren) -->
-          <div id="reassign-active-banner" class="hidden bg-gradient-to-r from-amber-600 to-orange-600 text-white p-3.5 rounded-xl shadow-md border border-orange-400 text-xs flex items-center justify-between gap-3 animate-pulse">
-            <div class="flex items-center gap-2.5">
-              <i class="fa-solid fa-arrows-rotate text-lg text-amber-200"></i>
-              <div id="reassign-banner-details">
-                <!-- Diisi dinamik oleh app.js -->
-              </div>
-            </div>
-            <button type="button" id="btn-cancel-reassign" class="bg-black/30 hover:bg-black/50 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition border border-white/20 whitespace-nowrap">
-              <i class="fa-solid fa-xmark mr-1"></i> Batal Pindah
+            <button type="button" id="btn-clear-history" class="text-xs font-bold text-rose-600 hover:text-rose-800 transition">
+              <i class="fa-solid fa-trash-can mr-1"></i> Kosongkan Arkib
             </button>
           </div>
+          <div id="saved-records-container" class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <!-- Diisi dinamik -->
+          </div>
+        </div>
 
-          <!-- Bar Penapis Grid (Sesi & Carian Nama Guru) -->
-          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <div class="flex items-center gap-2">
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Tapis Sesi Grid:</label>
-              <select id="filter-grid-session" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold">
-                <option value="Semua">Semua Sesi (54 Guru)</option>
-                <option value="Pagi" selected>Sesi Pagi Sahaja</option>
-                <option value="Petang">Sesi Petang Sahaja</option>
-              </select>
+        <!-- ================= SEKSYEN 4: ANALISIS & STATISTIK BEBANAN ================= -->
+        <div id="view-analytics-content" class="hidden space-y-4 pt-3">
+          <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900">Analisis Keadilan & Imbangan Bebanan Guru</h3>
+              <p class="text-xs text-slate-500">Statistik agihan waktu mengajar dan kekerapan relief bagi setiap guru</p>
             </div>
+            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
+              Prinsip Keadilan KPM
+            </span>
+          </div>
+          <div id="analytics-table-container" class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <!-- Diisi dinamik -->
+          </div>
+        </div>
 
-            <div class="relative w-64">
-              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-              <input 
-                type="text" 
-                id="search-teacher-grid" 
-                placeholder="Cari nama guru dalam grid..." 
-                class="w-full bg-white border border-slate-300 rounded-lg pl-8 pr-3 py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-              >
+        <!-- ================= SEKSYEN 5: SENARAI 54 GURU & STAF ================= -->
+        <div id="view-staff-content" class="hidden space-y-4 pt-3">
+          <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900">Direktori 54 Guru & Staf SK Ranggu, Tawau</h3>
+              <p class="text-xs text-slate-500">Maklumat pentadbir, guru kelas, opsyen panitia, dan sesi persekolahan 2026</p>
             </div>
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-200">
+              54 Orang Guru
+            </span>
           </div>
-
-          <!-- ================= KAWASAN PAPARAN UTAMA ================= -->
-          
-          <!-- 1. PAPARAN GRID BERWARNA (HERO FEATURE) -->
-          <div id="grid-view-container" class="space-y-2">
-            <!-- Table Matrix dijana oleh app.js -->
+          <div id="staff-directory-container" class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <!-- Diisi dinamik -->
           </div>
-
-          <!-- 2. PAPARAN SENARAI (LIST VIEW) -->
-          <div id="list-view-container" class="hidden space-y-2">
-            <!-- Table Senarai dijana oleh app.js -->
-          </div>
-
         </div>
 
-      </section>
-
-      <!-- ================= SEKSYEN REKOD RELIEF DISIMPAN ================= -->
-      <section id="saved-records-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-indigo-600 text-sm"></i>
-            <h3 class="text-sm font-extrabold text-slate-900 uppercase">Rekod Relief Terdahulu (Tersimpan)</h3>
-          </div>
-          <span class="text-xs text-slate-500">Pangkalan Data Tempatan (LocalStorage)</span>
-        </div>
-        <div id="saved-records-container" class="overflow-x-auto">
-          <!-- Diisi oleh app.js -->
-        </div>
-      </section>
+      </div>
 
     </main>
 

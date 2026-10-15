@@ -1,7 +1,10 @@
 /**
- * APLIKASI UTAMA PENGURUSAN GURU GANTI (RELPEN 2.0 SK RANGGU)
- * Mengendalikan UI interaktif, paparan Grid Berwarna, pertukaran relief (click-to-swap),
- * paparan Senarai, cetakan PDF rasmi KPM, dan simpanan rekod.
+ * APLIKASI UTAMA PENGURUSAN GURU GANTI (REDPEN 2.0 SK RANGGU)
+ * - Paparan Grid Berwarna Aktif Serta-Merta Sebaik Halaman Dimuatkan
+ * - Navigasi Penuh Berfungsi (Jadual Relief, Jadual Induk, Rekod, Analisis, Senarai Guru)
+ * - Pilihan Hari Cepat (Isnin hingga Jumaat)
+ * - Interaktiviti Pindah Relief (Click-to-Swap)
+ * - Cetakan Rasmi KPM & Arkib LocalStorage
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,12 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   // Status Aplikasi
+  let currentActiveTab = "relief"; // "relief", "master", "records", "analytics", "staff"
   let currentViewMode = "grid"; // "grid" atau "list"
-  let selectedReliefForReassign = null; // Menyimpan relief yang sedang dipilih untuk ditukar
-  let activeSessionFilter = "Semua"; // "Semua", "Pagi", "Petang"
+  let selectedReliefForReassign = null;
+  let activeSessionFilter = "Pagi"; // Lalai ke Pagi mengikut sesi jadual utama
   let teacherSearchQuery = "";
 
-  // 2. Elemen DOM
+  // 2. Elemen DOM Utama
   const elDateInput = document.getElementById('input-date');
   const elDayBadge = document.getElementById('badge-day-name');
   const elSessionSelect = document.getElementById('select-session');
@@ -35,13 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const elAvoidContinuous = document.getElementById('setting-avoid-continuous');
   const elPrioritizeOption = document.getElementById('setting-prioritize-option');
 
-  // Butang Jana & Aksi
+  // Butang Aksi Utama
   const elBtnGenerate = document.getElementById('btn-generate-relief');
   const elBtnReset = document.getElementById('btn-reset');
   const elBtnSave = document.getElementById('btn-save-db');
   const elBtnPrint = document.getElementById('btn-print-pdf');
+  const elBtnTopPrint = document.getElementById('btn-top-print');
 
-  // Bekas Paparan Jadual
+  // Bekas Paparan Jadual & Mod Penukaran
   const elDraftSection = document.getElementById('draft-section');
   const elViewSwitcherGrid = document.getElementById('btn-view-grid');
   const elViewSwitcherList = document.getElementById('btn-view-list');
@@ -52,23 +57,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const elBtnCancelReassign = document.getElementById('btn-cancel-reassign');
   const elFilterGridSession = document.getElementById('filter-grid-session');
   const elSearchTeacherGrid = document.getElementById('search-teacher-grid');
+  const elGridStatusBadge = document.getElementById('grid-status-badge');
 
   // Statistik Ringkasan
   const elStatAbsentTotal = document.getElementById('stat-absent-total');
   const elStatVacantTotal = document.getElementById('stat-vacant-total');
   const elStatAssignedTotal = document.getElementById('stat-assigned-total');
-
-  // Jam Digital
   const elLiveTime = document.getElementById('live-time-display');
 
-  // 3. Muatkan Tarikh Semasa & Hari
+  // Bekas Pandangan Alternatif
+  const elViewRelief = document.getElementById('view-relief-content');
+  const elViewMaster = document.getElementById('view-master-content');
+  const elViewRecords = document.getElementById('view-records-content');
+  const elViewAnalytics = document.getElementById('view-analytics-content');
+  const elViewStaff = document.getElementById('view-staff-content');
+  const elMainViewTitle = document.getElementById('main-view-title');
+  const elMainViewDesc = document.getElementById('main-view-desc');
+
+  // 3. Muatkan Tarikh & Waktu Langsung
   function initDateAndTime() {
     const today = new Date();
     const formatted = today.toISOString().split('T')[0];
-    elDateInput.value = formatted;
+    if (elDateInput) {
+      elDateInput.value = formatted;
+    }
     updateDayFromDate(formatted);
 
-    // Kemas kini jam langsung
+    // Jam langsung
     setInterval(() => {
       const now = new Date();
       if (elLiveTime) {
@@ -85,86 +100,141 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elDayBadge) {
       elDayBadge.textContent = `Hari ${dayName}`;
     }
+    updateQuickDayTabs(dayCode);
   }
 
-  elDateInput.addEventListener('change', (e) => {
-    updateDayFromDate(e.target.value);
-    // Jika draf sedia ada, jana semula mengikut hari baharu
-    if (engine.absentTeachers.length > 0) {
-      handleGenerate();
-    }
+  function updateQuickDayTabs(dayCode) {
+    const tabs = document.querySelectorAll('.day-tab-btn');
+    tabs.forEach(btn => {
+      const bDay = parseInt(btn.getAttribute('data-day'));
+      if (bDay === dayCode) {
+        btn.className = 'day-tab-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm font-bold transition';
+      } else {
+        btn.className = 'day-tab-btn px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 font-semibold transition';
+      }
+    });
+  }
+
+  // Listener input tarikh
+  if (elDateInput) {
+    elDateInput.addEventListener('change', (e) => {
+      updateDayFromDate(e.target.value);
+      if (engine.absentTeachers.length > 0) {
+        handleGenerate();
+      } else {
+        renderGridView();
+      }
+    });
+  }
+
+  // Listener tab hari pantas (Isnin - Jumaat)
+  document.querySelectorAll('.day-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dayCode = parseInt(btn.getAttribute('data-day'));
+      engine.selectedDayCode = dayCode;
+      
+      // Kira anggaran tarikh bagi hari tersebut dalam minggu ini
+      const today = new Date();
+      const currentDay = today.getDay() || 7; // 1: Mon, ... 7: Sun
+      const diff = dayCode - currentDay;
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + diff);
+      const formatted = targetDate.toISOString().split('T')[0];
+      
+      if (elDateInput) elDateInput.value = formatted;
+      engine.selectedDate = formatted;
+      if (elDayBadge) elDayBadge.textContent = `Hari ${engine.getDayName(dayCode)}`;
+      updateQuickDayTabs(dayCode);
+
+      if (engine.absentTeachers.length > 0) {
+        handleGenerate();
+      } else {
+        renderGridView();
+      }
+      showToast(`Jadual ditukar kepada Hari ${engine.getDayName(dayCode)}`, "info");
+    });
   });
 
   // 4. Isi Pilihan Guru & Sebab
   function populateDropdowns() {
-    // Guru SK Ranggu
-    elTeacherSelect.innerHTML = '<option value="">-- Pilih Nama Guru --</option>';
-    SK_RANGGU_TEACHERS.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t.id;
-      opt.textContent = `${t.name} (${t.role} • ${t.session})`;
-      elTeacherSelect.appendChild(opt);
-    });
+    if (elTeacherSelect) {
+      elTeacherSelect.innerHTML = '<option value="">-- Pilih Nama Guru --</option>';
+      SK_RANGGU_TEACHERS.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.name} (${t.role} • Sesi ${t.session})`;
+        elTeacherSelect.appendChild(opt);
+      });
+    }
 
-    // Sebab
-    elReasonSelect.innerHTML = '';
-    SK_RANGGU_CONFIG.reliefReasons.forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = r.code;
-      opt.textContent = r.label;
-      elReasonSelect.appendChild(opt);
-    });
+    if (elReasonSelect) {
+      elReasonSelect.innerHTML = '';
+      SK_RANGGU_CONFIG.reliefReasons.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.code;
+        opt.textContent = r.label;
+        elReasonSelect.appendChild(opt);
+      });
+    }
   }
 
   // 5. Tambah & Buang Guru Tidak Hadir
-  elBtnAddAbsent.addEventListener('click', () => {
-    const teacherId = parseInt(elTeacherSelect.value);
-    const reasonCode = elReasonSelect.value;
-    const reasonObj = SK_RANGGU_CONFIG.reliefReasons.find(r => r.code === reasonCode);
-    const reasonLabel = reasonObj ? reasonObj.label : "Cuti Rehat Khas (CRK)";
+  if (elBtnAddAbsent) {
+    elBtnAddAbsent.addEventListener('click', () => {
+      const teacherId = parseInt(elTeacherSelect.value);
+      const reasonCode = elReasonSelect.value;
+      const reasonObj = SK_RANGGU_CONFIG.reliefReasons.find(r => r.code === reasonCode);
+      const reasonLabel = reasonObj ? reasonObj.label : "Cuti Rehat Khas (CRK)";
 
-    if (!teacherId) {
-      showToast("Sila pilih guru yang tidak hadir terlebih dahulu!", "warning");
-      return;
-    }
+      if (!teacherId) {
+        showToast("Sila pilih guru yang tidak hadir terlebih dahulu!", "warning");
+        return;
+      }
 
-    const success = engine.addAbsentTeacher(teacherId, reasonCode, reasonLabel);
-    if (!success) {
-      showToast("Guru ini sudah ada dalam senarai tidak hadir!", "warning");
-      return;
-    }
+      const success = engine.addAbsentTeacher(teacherId, reasonCode, reasonLabel);
+      if (!success) {
+        showToast("Guru ini sudah ada dalam senarai tidak hadir!", "warning");
+        return;
+      }
 
-    renderAbsentChips();
-    elTeacherSelect.value = '';
-    showToast("Guru berjaya ditambah ke senarai tidak hadir.", "success");
-  });
+      renderAbsentChips();
+      elTeacherSelect.value = '';
+      // Jana secara terus agar grid segera memaparkan jadual relief
+      handleGenerate();
+      showToast("Guru berjaya ditambah. Jadual relief dikemas kini serta-merta.", "success");
+    });
+  }
 
-  // Contoh Demo Pantas (Persis Senario Video)
+  // Contoh Demo Pantas (Persis Video)
   if (elBtnQuickDemo) {
     elBtnQuickDemo.addEventListener('click', () => {
-      // Setkan ke hari Isnin jika hari ini bukan hari persekolahan biasa
-      const demoDate = "2026-10-12"; // Hari Isnin
-      elDateInput.value = demoDate;
-      updateDayFromDate(demoDate);
+      // Setkan ke hari Isnin (kod 1) yang mempunyai banyak slot mengajar
+      const demoDate = "2026-10-12";
+      if (elDateInput) elDateInput.value = demoDate;
+      engine.selectedDate = demoDate;
+      engine.selectedDayCode = 1;
+      if (elDayBadge) elDayBadge.textContent = "Hari Isnin";
+      updateQuickDayTabs(1);
 
-      // Kosongkan dan tambah 2 guru (Cikgu Rini Daud & Cikgu Sabriah Abdul Sabar)
+      // Tambah 2 guru tidak hadir (Cikgu Rini Daud & Cikgu Sabriah Abdul Sabar)
       engine.absentTeachers = [];
       engine.addAbsentTeacher(37, "CRK", "Cuti Rehat Khas (CRK)");
       engine.addAbsentTeacher(44, "MC", "Cuti Sakit (MC)");
 
       renderAbsentChips();
       handleGenerate();
-      showToast("Contoh Demo Video dimuatkan: Cikgu Rini Daud & Cikgu Sabriah tidak hadir. Jadual relief sedia dipratonton!", "info");
+      showToast("Demo Video Dimuatkan: Cikgu Rini & Cikgu Sabriah tidak hadir. Kotak oren sedia untuk diubah secara interaktif!", "success");
     });
   }
 
   function renderAbsentChips() {
+    if (!elAbsentChipsContainer) return;
     elAbsentChipsContainer.innerHTML = '';
     const absent = engine.absentTeachers;
-    elAbsentCount.textContent = absent.length;
+    if (elAbsentCount) elAbsentCount.textContent = absent.length;
 
     if (absent.length === 0) {
-      elAbsentChipsContainer.innerHTML = '<span class="text-xs text-slate-400 italic">Tiada guru tidak hadir ditambah lagi. Sila pilih guru di atas.</span>';
+      elAbsentChipsContainer.innerHTML = '<span class="text-xs text-slate-400 italic">Tiada guru tidak hadir. Jadual waktu mengajar guru dipaparkan secara normal di bawah.</span>';
       return;
     }
 
@@ -185,7 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (engine.absentTeachers.length > 0) {
           handleGenerate();
         } else {
-          elDraftSection.classList.add('hidden');
+          engine.activeAssignments = [];
+          cancelReassignMode();
+          renderGridView();
         }
       });
 
@@ -194,71 +266,70 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 6. Jana Jadual Relief (Langkah 2)
-  elBtnGenerate.addEventListener('click', handleGenerate);
+  if (elBtnGenerate) {
+    elBtnGenerate.addEventListener('click', handleGenerate);
+  }
 
   function handleGenerate() {
     if (engine.absentTeachers.length === 0) {
-      showToast("Sila pilih sekurang-kurangnya seorang guru tidak hadir!", "warning");
+      showToast("Sila pilih sekurang-kurangnya seorang guru tidak hadir untuk menjana relief!", "warning");
       return;
     }
 
-    // Kemas kini tetapan dari UI
-    engine.settings.maxReliefPerTeacher = parseInt(elMaxRelief.value) || 2;
-    engine.settings.autoAssign = elAutoAssign.checked;
-    engine.settings.slotSplit = parseInt(elSlotSplit.value) || 30;
-    engine.settings.avoidContinuous = elAvoidContinuous ? elAvoidContinuous.checked : true;
-    engine.settings.prioritizeSameSubject = elPrioritizeOption ? elPrioritizeOption.checked : true;
+    // Kemas kini tetapan
+    if (elMaxRelief) engine.settings.maxReliefPerTeacher = parseInt(elMaxRelief.value) || 2;
+    if (elAutoAssign) engine.settings.autoAssign = elAutoAssign.checked;
+    if (elSlotSplit) engine.settings.slotSplit = parseInt(elSlotSplit.value) || 30;
+    if (elAvoidContinuous) engine.settings.avoidContinuous = elAvoidContinuous.checked;
+    if (elPrioritizeOption) engine.settings.prioritizeSameSubject = elPrioritizeOption.checked;
 
     // Jana
     const assignments = engine.generateRelief();
-
-    // Batal mana-mana mod reassign sedia ada
     cancelReassignMode();
 
     // Kemas kini statistik
-    elStatAbsentTotal.textContent = engine.absentTeachers.length;
-    elStatVacantTotal.textContent = assignments.length;
+    if (elStatAbsentTotal) elStatAbsentTotal.textContent = engine.absentTeachers.length;
+    if (elStatVacantTotal) elStatVacantTotal.textContent = assignments.length;
     const assignedCount = assignments.filter(a => a.substituteTeacherId !== null).length;
-    elStatAssignedTotal.textContent = assignedCount;
+    if (elStatAssignedTotal) elStatAssignedTotal.textContent = assignedCount;
 
-    // Paparkan seksyen draf
-    elDraftSection.classList.remove('hidden');
+    if (elGridStatusBadge) {
+      elGridStatusBadge.textContent = "RELIEF DIJANA (DRAF)";
+      elGridStatusBadge.className = "bg-orange-100 text-orange-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-orange-200 animate-pulse";
+    }
 
     // Paparkan paparan semasa
     renderCurrentView();
-
-    // Skrol ke bahagian draf
-    elDraftSection.scrollIntoView({ behavior: 'smooth' });
     showToast(`Jadual relief berjaya dijana! (${assignments.length} waktu perlu diganti)`, "success");
   }
 
-  // 7. Pengendali Penukaran Paparan (Grid vs Senarai)
-  elViewSwitcherGrid.addEventListener('click', () => {
-    currentViewMode = "grid";
-    elViewSwitcherGrid.classList.add('bg-indigo-600', 'text-white');
-    elViewSwitcherGrid.classList.remove('bg-white', 'text-slate-700');
-    elViewSwitcherList.classList.add('bg-white', 'text-slate-700');
-    elViewSwitcherList.classList.remove('bg-indigo-600', 'text-white');
-    renderCurrentView();
-  });
+  // 7. Penukar Pandangan Grid vs Senarai
+  if (elViewSwitcherGrid) {
+    elViewSwitcherGrid.addEventListener('click', () => {
+      currentViewMode = "grid";
+      elViewSwitcherGrid.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition flex items-center gap-1.5 font-bold';
+      if (elViewSwitcherList) elViewSwitcherList.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-700 shadow-sm transition flex items-center gap-1.5 font-semibold';
+      renderCurrentView();
+    });
+  }
 
-  elViewSwitcherList.addEventListener('click', () => {
-    currentViewMode = "list";
-    elViewSwitcherList.classList.add('bg-indigo-600', 'text-white');
-    elViewSwitcherList.classList.remove('bg-white', 'text-slate-700');
-    elViewSwitcherGrid.classList.add('bg-white', 'text-slate-700');
-    elViewSwitcherGrid.classList.remove('bg-indigo-600', 'text-white');
-    renderCurrentView();
-  });
+  if (elViewSwitcherList) {
+    elViewSwitcherList.addEventListener('click', () => {
+      currentViewMode = "list";
+      elViewSwitcherList.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition flex items-center gap-1.5 font-bold';
+      if (elViewSwitcherGrid) elViewSwitcherGrid.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-700 shadow-sm transition flex items-center gap-1.5 font-semibold';
+      renderCurrentView();
+    });
+  }
 
   function renderCurrentView() {
     if (currentViewMode === "grid") {
-      elGridContainer.classList.remove('hidden');
-      elListContainer.classList.add('hidden');
+      if (elGridContainer) elGridContainer.classList.remove('hidden');
+      if (elListContainer) elListContainer.classList.add('hidden');
       renderGridView();
     } else {
-      elGridContainer.classList.add('hidden');
-      elListContainer.classList.remove('hidden');
+      if (elGridContainer) elGridContainer.classList.add('hidden');
+      if (elListContainer) elListContainer.classList.remove('hidden');
       renderListView();
     }
   }
@@ -279,14 +350,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 8. HERO FEATURE: PAPARAN GRID BERWARNA (SEPERTI DI DALAM VIDEO)
+  // 8. PAPARAN GRID BERWARNA (SENTIASA AKTIF & MEMAPARKAN JADUAL WAKTU GURU)
   // =========================================================================
   function renderGridView() {
+    if (!elGridContainer) return;
+
     const dayCode = engine.selectedDayCode;
-    const periods = TIMETABLE_PERIODS; // W1 hingga W11 + Rehat
+    const periods = TIMETABLE_PERIODS;
     const absentTeacherIds = new Set(engine.absentTeachers.map(a => a.teacherId));
 
-    // Tapis guru mengikut sesi & carian
+    // Tapis senarai guru
     let teachers = SK_RANGGU_TEACHERS.filter(t => {
       if (activeSessionFilter === "Pagi" && t.session !== "Pagi") return false;
       if (activeSessionFilter === "Petang" && t.session !== "Petang") return false;
@@ -303,26 +376,28 @@ document.addEventListener('DOMContentLoaded', () => {
         <table class="w-full text-xs border-collapse">
           <thead>
             <tr class="bg-indigo-950 text-white font-bold border-b border-indigo-900">
-              <th class="p-3 text-left w-64 sticky left-0 bg-indigo-950 z-20 shadow-md">GURU (${teachers.length})</th>
+              <th class="p-3 text-left w-64 sticky left-0 bg-indigo-950 z-20 shadow-md">
+                GURU (${teachers.length}) • ${engine.getDayName(dayCode).toUpperCase()}
+              </th>
     `;
 
-    // Header Waktu (W1 hingga W11)
+    // Header Waktu (W1 hingga W11 + Rehat)
     periods.forEach(p => {
       if (p.isRehat) {
         html += `<th class="p-2 text-center bg-indigo-900/80 text-[10px] w-14">REHAT<br><span class="text-[9px] opacity-75">${p.masa}</span></th>`;
       } else {
-        html += `<th class="p-2 text-center min-w-[78px] text-[10px]">${p.label}<br><span class="text-[9px] opacity-75 font-normal">${p.masa}</span></th>`;
+        html += `<th class="p-2 text-center min-w-[80px] text-[10px]">${p.label}<br><span class="text-[9px] opacity-75 font-normal">${p.masa}</span></th>`;
       }
     });
 
     html += `
-              <th class="p-3 text-center w-20 sticky right-0 bg-indigo-950 z-20">JUM RELIEF</th>
+              <th class="p-3 text-center w-20 sticky right-0 bg-indigo-950 z-20">RELIEF</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
     `;
 
-    // Dapatkan calon target jika mod reassign aktif
+    // Calon target jika mod reassign aktif
     let availableTargetTeacherIds = new Set();
     if (selectedReliefForReassign) {
       const availables = engine.getAvailableTeachersForSlot(
@@ -333,18 +408,15 @@ document.addEventListener('DOMContentLoaded', () => {
       availables.forEach(c => availableTargetTeacherIds.add(c.teacherId));
     }
 
-    // Baris Setiap Guru
     teachers.forEach(t => {
       const isAbsent = absentTeacherIds.has(t.id);
       const absentInfo = isAbsent ? engine.absentTeachers.find(a => a.teacherId === t.id) : null;
-      
-      // Hitung jumlah relief yang dipegang guru ini hari ini
       const teacherReliefs = engine.activeAssignments.filter(a => a.substituteTeacherId === t.id);
       const reliefCount = teacherReliefs.length;
 
       html += `
         <tr class="hover:bg-slate-50/80 transition-colors ${isAbsent ? 'bg-purple-50/40' : ''}">
-          <!-- Kolum Guru (Sticky Left) -->
+          <!-- Kolum Guru -->
           <td class="p-2.5 font-medium text-slate-800 sticky left-0 bg-white z-10 border-r border-slate-200 shadow-sm">
             <div class="flex items-center gap-2">
               <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${isAbsent ? 'bg-purple-200 text-purple-800' : 'bg-slate-100 text-slate-700'}">
@@ -359,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
       `;
 
-      // Kolum Setiap Slot Waktu
+      // Setiap Waktu Mengajar
       periods.forEach(p => {
         if (p.isRehat) {
           html += `<td class="p-1 text-center bg-slate-100/60 border-r border-slate-100 text-[10px] text-slate-400 font-semibold select-none">REHAT</td>`;
@@ -367,14 +439,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const waktu = p.waktu;
-
-        // 1. Semak adakah guru ini memegang RELIEF pada slot ini?
         const reliefAssigned = engine.activeAssignments.find(a => a.substituteTeacherId === t.id && a.waktu === waktu);
-
-        // 2. Semak adakah guru ini mengajar KELAS SENDIRI pada slot ini?
         const ownClass = engine.getTeacherClassAtSlot(t.name, dayCode, waktu);
 
-        // JIKA GURU MEMEGANG RELIEF (WARNA OREN - Seperti di video!)
+        // 1. JADUAL RELIEF (WARNA OREN - BOLEH DIKLIK UNTUK PINDAH)
         if (reliefAssigned) {
           const isSelected = selectedReliefForReassign && selectedReliefForReassign.id === reliefAssigned.id;
           html += `
@@ -382,9 +450,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <div 
                 class="matrix-cell cell-relief rounded-lg p-1.5 text-[10px] leading-tight flex flex-col justify-center items-center ${isSelected ? 'active-selected' : ''}"
                 data-relief-id="${reliefAssigned.id}"
-                title="RELIEF: ${reliefAssigned.kelas} ${reliefAssigned.subjek} (Guru Asal: ${reliefAssigned.originalGuruShort}) - Klik untuk ubah / pindahkan guru ganti"
+                title="RELIEF: ${reliefAssigned.kelas} ${reliefAssigned.subjek} (Guru Asal: ${reliefAssigned.originalGuruShort}) - Klik untuk tukar/pindahkan guru ganti"
               >
-                <span class="font-extrabold uppercase tracking-wide text-[9px] bg-black/20 px-1 py-0.2 rounded mb-0.5">RELIEF</span>
+                <span class="font-extrabold uppercase tracking-wide text-[8px] bg-black/25 px-1 rounded mb-0.5">RELIEF</span>
                 <span class="font-bold">${reliefAssigned.kelas}</span>
                 <span class="text-[9px] opacity-90">${reliefAssigned.subjek}</span>
                 <span class="text-[8px] opacity-75 truncate max-w-full">Ganti: ${reliefAssigned.originalGuruShort}</span>
@@ -392,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
           `;
         }
-        // JIKA MOD REASSIGN AKTIF & GURU INI ADALAH TARGET HIJAU (BEBAS & SESUAI)
+        // 2. MOD PINDAH RELIEF (WARNA HIJAU BERDENYUT BAGI GURU LAPANG)
         else if (selectedReliefForReassign && selectedReliefForReassign.waktu === waktu && availableTargetTeacherIds.has(t.id)) {
           const strain = engine.checkTeacherWorkloadStrain(t.name, dayCode, waktu);
           html += `
@@ -401,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 class="matrix-cell cell-available-target rounded-lg p-1 text-[10px] leading-tight flex flex-col justify-center items-center group cursor-pointer"
                 data-target-teacher-id="${t.id}"
                 data-target-teacher-name="${t.shortName}"
-                title="Slot Bebas! Klik untuk pindahkan relief ${selectedReliefForReassign.kelas} kepada ${t.shortName}"
+                title="Slot Bebas! Klik untuk pindahkan relief kepada ${t.shortName}"
               >
                 <i class="fa-solid fa-arrow-down-to-bracket text-emerald-600 group-hover:text-white mb-0.5"></i>
                 <span class="font-bold text-[9px]">PILIH</span>
@@ -410,14 +478,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
           `;
         }
-        // JIKA GURU SEDANG MENGAJAR KELAS SENDIRI (WARNA BIRU)
+        // 3. JADUAL ASAL GURU (WARNA BIRU)
         else if (ownClass) {
-          // Jika guru tidak hadir, tunjukkan slot kosong yang perlu relief
           if (isAbsent) {
             html += `
               <td class="p-1 text-center border-r border-slate-100">
                 <div class="matrix-cell bg-purple-100 text-purple-900 border border-purple-300 rounded-lg p-1.5 text-[10px] leading-tight flex flex-col justify-center items-center opacity-70">
-                  <span class="text-[8px] font-bold text-purple-700">ASAL</span>
+                  <span class="text-[8px] font-bold text-purple-700">KOSONG</span>
                   <span class="font-bold">${ownClass.kelas}</span>
                   <span class="text-[9px]">${ownClass.subjek}</span>
                 </div>
@@ -434,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
           }
         }
-        // JIKA SLOT KOSONG / REHAT GURU (NEUTRAL)
+        // 4. SLOT KOSONG / TIADA KELAS
         else {
           html += `
             <td class="p-1 text-center border-r border-slate-100">
@@ -446,10 +513,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // Kolum Jumlah Relief (Sticky Right)
+      // Kolum Relief
       html += `
           <td class="p-2 text-center sticky right-0 bg-white z-10 border-l border-slate-200">
-            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${reliefCount > 0 ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${reliefCount > 0 ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 text-slate-400'}">
               ${reliefCount}
             </span>
           </td>
@@ -464,48 +531,44 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     elGridContainer.innerHTML = html;
-
-    // Pasang Event Listeners untuk Interaktiviti Grid!
     attachGridEventListeners();
   }
 
-  // Pasang Event Listeners Grid (Click-to-Move Relief)
+  // Event Listeners Klik Sel Relief & Sel Hijau
   function attachGridEventListeners() {
-    // 1. Klik pada slot relief (Oren) untuk aktifkan Mod Pindah Relief
-    const reliefCells = elGridContainer.querySelectorAll('.cell-relief');
-    reliefCells.forEach(cell => {
-      cell.addEventListener('click', (e) => {
+    if (!elGridContainer) return;
+
+    // Klik slot oren untuk aktifkan pertukaran
+    elGridContainer.querySelectorAll('.cell-relief').forEach(cell => {
+      cell.addEventListener('click', () => {
         const reliefId = cell.getAttribute('data-relief-id');
         const relief = engine.activeAssignments.find(a => a.id === reliefId);
         if (!relief) return;
 
-        // Aktifkan mod penukaran
         selectedReliefForReassign = relief;
 
-        // Paparkan banner maklumat
-        elReassignBanner.classList.remove('hidden');
-        elReassignDetails.innerHTML = `
-          Anda sedang menukar relief untuk <strong>${relief.kelas} (${relief.subjek})</strong> pada waktu <strong>${relief.waktu} (${relief.masa})</strong>.<br>
-          Guru semasa: <span class="bg-orange-600 px-1.5 py-0.5 rounded text-white font-bold">${relief.substituteTeacherShort}</span>. 
-          <span class="text-amber-200 underline font-semibold">Sila klik mana-mana kotak HIJAU berdenyut di bawah untuk memindahkan tugas ini kepada guru berkenaan.</span>
-        `;
+        if (elReassignBanner) elReassignBanner.classList.remove('hidden');
+        if (elReassignDetails) {
+          elReassignDetails.innerHTML = `
+            Anda sedang menukar relief untuk <strong>${relief.kelas} (${relief.subjek})</strong> pada waktu <strong>W${relief.waktu} (${relief.masa})</strong>.<br>
+            Guru semasa: <span class="bg-orange-600 px-1.5 py-0.5 rounded text-white font-bold">${relief.substituteTeacherShort}</span>. 
+            <span class="text-amber-200 underline font-semibold">Klik mana-mana kotak HIJAU berdenyut untuk memindahkan tugas ini kepada guru berkenaan.</span>
+          `;
+        }
 
-        // Render semula grid untuk paparkan kotak hijau berdenyut
         renderGridView();
         showToast(`Mod Pindah Aktif: Pilih mana-mana slot hijau untuk gantikan ${relief.substituteTeacherShort}.`, "info");
       });
     });
 
-    // 2. Klik pada slot target (Hijau) untuk laksanakan pemindahan!
-    const targetCells = elGridContainer.querySelectorAll('.cell-available-target');
-    targetCells.forEach(cell => {
-      cell.addEventListener('click', (e) => {
+    // Klik slot hijau untuk laksanakan pemindahan
+    elGridContainer.querySelectorAll('.cell-available-target').forEach(cell => {
+      cell.addEventListener('click', () => {
         if (!selectedReliefForReassign) return;
 
         const newTeacherId = parseInt(cell.getAttribute('data-target-teacher-id'));
-        const newTeacherName = cell.getAttribute('data-target-teacher-name');
-
         const result = engine.reassignRelief(selectedReliefForReassign.id, newTeacherId);
+        
         if (result.success) {
           showToast(result.message, "success");
           cancelReassignMode();
@@ -517,24 +580,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Batal Mod Pindah Relief
-  elBtnCancelReassign.addEventListener('click', cancelReassignMode);
+  if (elBtnCancelReassign) {
+    elBtnCancelReassign.addEventListener('click', cancelReassignMode);
+  }
 
   function cancelReassignMode() {
     selectedReliefForReassign = null;
-    if (elReassignBanner) {
-      elReassignBanner.classList.add('hidden');
-    }
-    renderCurrentView();
+    if (elReassignBanner) elReassignBanner.classList.add('hidden');
+    renderGridView();
   }
 
   // =========================================================================
   // 9. PAPARAN SENARAI (LIST VIEW)
   // =========================================================================
   function renderListView() {
+    if (!elListContainer) return;
+
     const assignments = engine.activeAssignments;
     if (assignments.length === 0) {
-      elListContainer.innerHTML = '<div class="p-8 text-center text-slate-400">Tiada jadual relief dijana.</div>';
+      elListContainer.innerHTML = `
+        <div class="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
+          <i class="fa-solid fa-clipboard-list text-3xl text-slate-300 mb-2"></i>
+          <div class="font-bold">Tiada Jadual Relief Dijana</div>
+          <p class="text-xs text-slate-400 mt-1">Sila pilih guru tidak hadir di atas dan klik "2. JANA JADUAL RELIEF" untuk melihat senarai.</p>
+        </div>
+      `;
       return;
     }
 
@@ -555,7 +625,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     assignments.forEach((item, index) => {
-      // Dapatkan senarai guru yang lapang untuk waktu ini
       const availableTeachers = engine.getAvailableTeachersForSlot(item.waktu, item.kodHari, item.id);
 
       html += `
@@ -576,17 +645,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </span>
           </td>
           <td class="p-3">
-            <div class="flex items-center gap-2">
-              <select class="select-substitute-inline border border-slate-300 bg-white rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none w-64" data-relief-id="${item.id}">
-                <option value="">-- Pilih Guru Ganti --</option>
+            <select class="select-substitute-inline border border-slate-300 bg-white rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none w-64" data-relief-id="${item.id}">
+              <option value="">-- Pilih Guru Ganti --</option>
       `;
 
-      // Guru yang sedang ditugaskan
       if (item.substituteTeacherId) {
         html += `<option value="${item.substituteTeacherId}" selected>${item.substituteTeacherName} [Semasa]</option>`;
       }
 
-      // Senarai calon lapang
       availableTeachers.forEach(c => {
         if (c.teacherId !== item.substituteTeacherId) {
           html += `<option value="${c.teacherId}">${c.name} (${c.reliefCount} Relief) - ${c.statusLabel}</option>`;
@@ -594,8 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       html += `
-              </select>
-            </div>
+            </select>
           </td>
           <td class="p-3 text-center">
             ${item.substituteTeacherId ? 
@@ -611,17 +676,10 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     });
 
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
-
+    html += `</tbody></table></div>`;
     elListContainer.innerHTML = html;
 
-    // Event listener untuk dropdown inline
-    const inlineSelects = elListContainer.querySelectorAll('.select-substitute-inline');
-    inlineSelects.forEach(select => {
+    elListContainer.querySelectorAll('.select-substitute-inline').forEach(select => {
       select.addEventListener('change', (e) => {
         const reliefId = select.getAttribute('data-relief-id');
         const newTeacherId = parseInt(e.target.value);
@@ -639,39 +697,292 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 10. SIMPAN KE DATABASE (LOCALSTORAGE)
+  // 10. NAVIGASI TAB UTAMA & PANDANGAN ALTERNATIF
   // =========================================================================
-  elBtnSave.addEventListener('click', () => {
-    if (engine.activeAssignments.length === 0) {
-      showToast("Tiada jadual relief untuk disimpan!", "warning");
-      return;
-    }
+  function switchMainTab(tabKey) {
+    currentActiveTab = tabKey;
 
-    const saved = engine.saveToDatabase();
-    showToast(`Jadual relief bagi tarikh ${saved.date} berjaya disimpan ke pangkalan data!`, "success");
-    renderSavedRecordsTable();
+    // Sembunyikan semua seksyen
+    if (elViewRelief) elViewRelief.classList.add('hidden');
+    if (elViewMaster) elViewMaster.classList.add('hidden');
+    if (elViewRecords) elViewRecords.classList.add('hidden');
+    if (elViewAnalytics) elViewAnalytics.classList.add('hidden');
+    if (elViewStaff) elViewStaff.classList.add('hidden');
+
+    // Kemas kini gaya butang sidebar & tab atas
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      const v = btn.getAttribute('data-view');
+      if (v === tabKey) {
+        btn.className = 'nav-btn w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/30 transition text-left';
+      } else {
+        btn.className = 'nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white text-indigo-200 transition text-left';
+      }
+    });
+
+    document.querySelectorAll('.top-tab-btn').forEach(btn => {
+      const v = btn.getAttribute('data-view');
+      if (v === tabKey) {
+        btn.className = 'top-tab-btn px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm font-bold transition flex items-center gap-1.5';
+      } else {
+        btn.className = 'top-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 font-semibold';
+      }
+    });
+
+    // Paparkan tab yang dipilih
+    if (tabKey === "relief") {
+      if (elViewRelief) elViewRelief.classList.remove('hidden');
+      if (elMainViewTitle) elMainViewTitle.textContent = "Pengurusan Guru Ganti (Relief)";
+      if (elMainViewDesc) elMainViewDesc.textContent = "Penjanaan jadual relief pintar, semakan jadual waktu mengajar guru & slip edaran rasmi";
+      renderGridView();
+    } else if (tabKey === "master") {
+      if (elViewMaster) elViewMaster.classList.remove('hidden');
+      if (elMainViewTitle) elMainViewTitle.textContent = "Jadual Waktu Induk SK Ranggu";
+      if (elMainViewDesc) elMainViewDesc.textContent = "Pangkalan data lengkap 654 slot waktu mengajar bagi 54 orang guru (Sesi 2026)";
+      renderMasterTimetable();
+    } else if (tabKey === "records") {
+      if (elViewRecords) elViewRecords.classList.remove('hidden');
+      if (elMainViewTitle) elMainViewTitle.textContent = "Arkib Rekod Jadual Relief";
+      if (elMainViewDesc) elMainViewDesc.textContent = "Senarai jadual relief yang telah disimpan ke pangkalan data tempatan";
+      renderSavedRecordsTable();
+    } else if (tabKey === "analytics") {
+      if (elViewAnalytics) elViewAnalytics.classList.remove('hidden');
+      if (elMainViewTitle) elMainViewTitle.textContent = "Analisis Bebanan & Agihan Relief";
+      if (elMainViewDesc) elMainViewDesc.textContent = "Pemantauan keadilan agihan waktu mengajar dan kekerapan relief bagi semua guru";
+      renderAnalyticsTable();
+    } else if (tabKey === "staff") {
+      if (elViewStaff) elViewStaff.classList.remove('hidden');
+      if (elMainViewTitle) elMainViewTitle.textContent = "Direktori 54 Guru & Staf SK Ranggu";
+      if (elMainViewDesc) elMainViewDesc.textContent = "Senarai penuh warga pendidik SK Ranggu berserta jawatan, sesi dan panitia";
+      renderStaffDirectory();
+    }
+  }
+
+  // Pasang listeners pada butang navigasi
+  document.querySelectorAll('.nav-btn, .top-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.getAttribute('data-view');
+      if (v) switchMainTab(v);
+    });
   });
 
-  // Render Jadual Rekod Simpanan Terdahulu
+  // =========================================================================
+  // 11. PAPARAN JADUAL WAKTU INDUK (MASTER TIMETABLE)
+  // =========================================================================
+  function renderMasterTimetable() {
+    const container = document.getElementById('master-timetable-container');
+    if (!container) return;
+
+    const data = engine.timetableData;
+    const dayCode = engine.selectedDayCode;
+    const dayName = engine.getDayName(dayCode);
+
+    // Tapis slot mengikut hari semasa
+    const daySlots = data.filter(d => d.kodHari === dayCode);
+
+    let html = `
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-700">Pilih Hari Induk:</span>
+          <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-bold">
+            <button class="btn-master-day px-2.5 py-1 rounded ${dayCode === 1 ? 'bg-indigo-600 text-white' : 'text-slate-600'}" data-day="1">Isnin</button>
+            <button class="btn-master-day px-2.5 py-1 rounded ${dayCode === 2 ? 'bg-indigo-600 text-white' : 'text-slate-600'}" data-day="2">Selasa</button>
+            <button class="btn-master-day px-2.5 py-1 rounded ${dayCode === 3 ? 'bg-indigo-600 text-white' : 'text-slate-600'}" data-day="3">Rabu</button>
+            <button class="btn-master-day px-2.5 py-1 rounded ${dayCode === 4 ? 'bg-indigo-600 text-white' : 'text-slate-600'}" data-day="4">Khamis</button>
+            <button class="btn-master-day px-2.5 py-1 rounded ${dayCode === 5 ? 'bg-indigo-600 text-white' : 'text-slate-600'}" data-day="5">Jumaat</button>
+          </div>
+        </div>
+        <div class="text-xs text-slate-500">
+          Memaparkan <strong>${daySlots.length}</strong> slot mengajar pada <strong>Hari ${dayName}</strong>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+        <table class="w-full text-xs text-left divide-y divide-slate-200">
+          <thead class="bg-indigo-950 text-white font-bold uppercase text-[11px]">
+            <tr>
+              <th class="p-3 text-center w-12">BIL</th>
+              <th class="p-3">GURU</th>
+              <th class="p-3">WAKTU & MASA</th>
+              <th class="p-3">KELAS</th>
+              <th class="p-3">SUBJEK</th>
+              <th class="p-3">PAPARAN JADUAL</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-800">
+    `;
+
+    daySlots.forEach((slot, idx) => {
+      html += `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-2.5 text-center font-bold text-slate-400">${idx + 1}</td>
+          <td class="p-2.5 font-bold text-slate-900">${slot.guru}</td>
+          <td class="p-2.5 font-mono text-slate-600">
+            <span class="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-800 mr-1">W${slot.waktu}</span>
+            ${slot.masa}
+          </td>
+          <td class="p-2.5 font-bold text-indigo-700">${slot.kelas}</td>
+          <td class="p-2.5 font-semibold text-slate-700">${slot.subjek}</td>
+          <td class="p-2.5">
+            <span class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold">
+              ${slot.paparan}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+
+    // Pasang listeners penukar hari pada Jadual Induk
+    container.querySelectorAll('.btn-master-day').forEach(b => {
+      b.addEventListener('click', () => {
+        engine.selectedDayCode = parseInt(b.getAttribute('data-day'));
+        renderMasterTimetable();
+      });
+    });
+  }
+
+  // =========================================================================
+  // 12. ANALISIS & BEBANAN GURU
+  // =========================================================================
+  function renderAnalyticsTable() {
+    const container = document.getElementById('analytics-table-container');
+    if (!container) return;
+
+    const stats = engine.getDistributionStatistics();
+
+    let html = `
+      <table class="w-full text-xs text-left divide-y divide-slate-200">
+        <thead class="bg-indigo-950 text-white font-bold uppercase text-[11px]">
+          <tr>
+            <th class="p-3 text-center w-12">ID</th>
+            <th class="p-3">NAMA GURU</th>
+            <th class="p-3">JAWATAN / PERANAN</th>
+            <th class="p-3 text-center">SESI</th>
+            <th class="p-3 text-center">KELAS HARI INI</th>
+            <th class="p-3 text-center">JUMLAH RELIEF</th>
+            <th class="p-3 text-center">STATUS BEBANAN</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-800">
+    `;
+
+    stats.forEach(st => {
+      const t = st.teacher;
+      const isOverload = st.reliefCount > 2;
+      html += `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-2.5 text-center font-bold text-slate-400">${t.id}</td>
+          <td class="p-2.5 font-bold text-slate-900">${t.name}</td>
+          <td class="p-2.5 text-slate-600">${t.role}</td>
+          <td class="p-2.5 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.session === 'Pagi' ? 'bg-sky-50 text-sky-700' : 'bg-amber-50 text-amber-700'}">
+              ${t.session}
+            </span>
+          </td>
+          <td class="p-2.5 text-center font-bold font-mono">${st.classesCount} Waktu</td>
+          <td class="p-2.5 text-center">
+            <span class="inline-block px-2 py-0.5 rounded font-bold font-mono ${st.reliefCount > 0 ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-500'}">
+              ${st.reliefCount}
+            </span>
+          </td>
+          <td class="p-2.5 text-center">
+            ${isOverload ? 
+              `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[10px] font-bold">Maksima</span>` : 
+              `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">Seimbang</span>`
+            }
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+
+  // =========================================================================
+  // 13. DIREKTORI 54 GURU & STAF
+  // =========================================================================
+  function renderStaffDirectory() {
+    const container = document.getElementById('staff-directory-container');
+    if (!container) return;
+
+    let html = `
+      <table class="w-full text-xs text-left divide-y divide-slate-200">
+        <thead class="bg-indigo-950 text-white font-bold uppercase text-[11px]">
+          <tr>
+            <th class="p-3 text-center w-12">BIL</th>
+            <th class="p-3">NAMA PENUH</th>
+            <th class="p-3">NAMA SINGKATAN</th>
+            <th class="p-3">JAWATAN / PERANAN</th>
+            <th class="p-3">OPSYEN PANITIA</th>
+            <th class="p-3 text-center">SESI</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-800">
+    `;
+
+    SK_RANGGU_TEACHERS.forEach((t, i) => {
+      html += `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-2.5 text-center font-bold text-slate-400">${i + 1}</td>
+          <td class="p-2.5 font-bold text-slate-900">${t.name}</td>
+          <td class="p-2.5 text-indigo-700 font-semibold">${t.shortName}</td>
+          <td class="p-2.5 text-slate-600">${t.role}</td>
+          <td class="p-2.5">
+            <span class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded text-[10px] font-bold">
+              ${t.major}
+            </span>
+          </td>
+          <td class="p-2.5 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.session === 'Pagi' ? 'bg-sky-50 text-sky-700' : 'bg-amber-50 text-amber-700'}">
+              ${t.session}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+
+  // =========================================================================
+  // 14. SIMPAN & MUAT REKOD LOCALSTORAGE
+  // =========================================================================
+  if (elBtnSave) {
+    elBtnSave.addEventListener('click', () => {
+      if (engine.activeAssignments.length === 0) {
+        showToast("Tiada jadual relief untuk disimpan!", "warning");
+        return;
+      }
+
+      const saved = engine.saveToDatabase();
+      showToast(`Jadual relief bagi tarikh ${saved.date} berjaya disimpan ke pangkalan data!`, "success");
+      renderSavedRecordsTable();
+    });
+  }
+
   function renderSavedRecordsTable() {
     const container = document.getElementById('saved-records-container');
     if (!container) return;
 
     const records = engine.loadSavedRecords();
     if (records.length === 0) {
-      container.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs">Tiada rekod relief disimpan sebelum ini.</div>';
+      container.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs">Tiada rekod relief disimpan dalam arkib.</div>';
       return;
     }
 
     let html = `
       <table class="w-full text-xs text-left divide-y divide-slate-200">
-        <thead class="bg-slate-50 text-slate-600 font-bold uppercase">
+        <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[11px]">
           <tr>
-            <th class="p-2.5">TARIKH</th>
-            <th class="p-2.5">HARI</th>
-            <th class="p-2.5">GURU TIDAK HADIR</th>
-            <th class="p-2.5">JUMLAH SLOT</th>
-            <th class="p-2.5 text-center">AKSI</th>
+            <th class="p-3">TARIKH</th>
+            <th class="p-3">HARI</th>
+            <th class="p-3">GURU TIDAK HADIR</th>
+            <th class="p-3 text-center">JUMLAH WAKTU</th>
+            <th class="p-3 text-center">AKSI</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -681,13 +992,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const absentList = r.absentTeachers.map(a => a.shortName).join(', ');
       html += `
         <tr class="hover:bg-slate-50 transition">
-          <td class="p-2.5 font-bold text-slate-800">${r.date}</td>
-          <td class="p-2.5">${r.dayName}</td>
-          <td class="p-2.5 text-slate-600 truncate max-w-xs" title="${absentList}">${absentList}</td>
-          <td class="p-2.5 font-bold text-indigo-600">${r.assignments.length} Waktu</td>
-          <td class="p-2.5 text-center">
-            <button class="btn-load-record bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1 rounded font-bold transition mr-1" data-date="${r.date}">
-              Muat
+          <td class="p-3 font-bold text-slate-900">${r.date}</td>
+          <td class="p-3 font-semibold text-indigo-700">${r.dayName}</td>
+          <td class="p-3 text-slate-600 truncate max-w-xs" title="${absentList}">${absentList}</td>
+          <td class="p-3 text-center font-bold text-indigo-600 font-mono">${r.assignments.length} Waktu</td>
+          <td class="p-3 text-center">
+            <button class="btn-load-record bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg font-bold text-xs shadow-sm transition mr-1" data-date="${r.date}">
+              Muat Semula
             </button>
           </td>
         </tr>
@@ -697,7 +1008,6 @@ document.addEventListener('DOMContentLoaded', () => {
     html += `</tbody></table>`;
     container.innerHTML = html;
 
-    // Pasang handler butang muat rekod
     container.querySelectorAll('.btn-load-record').forEach(btn => {
       btn.addEventListener('click', () => {
         const date = btn.getAttribute('data-date');
@@ -707,26 +1017,39 @@ document.addEventListener('DOMContentLoaded', () => {
           engine.selectedDayCode = target.dayCode;
           engine.absentTeachers = target.absentTeachers;
           engine.activeAssignments = target.assignments;
-          elDateInput.value = target.date;
+          if (elDateInput) elDateInput.value = target.date;
           updateDayFromDate(target.date);
           renderAbsentChips();
-          elDraftSection.classList.remove('hidden');
+          switchMainTab("relief");
           renderCurrentView();
-          showToast(`Rekod relief ${target.date} berjaya dimuatkan!`, "info");
+          showToast(`Rekod relief bagi tarikh ${target.date} berjaya dimuatkan semula!`, "info");
         }
       });
     });
   }
 
+  // Kosongkan arkib
+  const elBtnClearHistory = document.getElementById('btn-clear-history');
+  if (elBtnClearHistory) {
+    elBtnClearHistory.addEventListener('click', () => {
+      if (confirm("Adakah anda pasti mahu memadam semua arkib rekod relief yang disimpan?")) {
+        localStorage.removeItem("SKR_SAVED_RELIEF_RECORDS");
+        renderSavedRecordsTable();
+        showToast("Arkib rekod relief telah dikosongkan.", "info");
+      }
+    });
+  }
+
   // =========================================================================
-  // 11. CETAKAN RASMI (PDF & PRINT READY KPM FORMAT)
+  // 15. CETAKAN RASMI KPM & SLIP EDARAN
   // =========================================================================
-  elBtnPrint.addEventListener('click', prepareAndPrint);
+  if (elBtnPrint) elBtnPrint.addEventListener('click', prepareAndPrint);
+  if (elBtnTopPrint) elBtnTopPrint.addEventListener('click', prepareAndPrint);
 
   function prepareAndPrint() {
     const assignments = engine.activeAssignments;
     if (assignments.length === 0) {
-      showToast("Sila jana jadual relief sebelum mencetak!", "warning");
+      showToast("Sila jana jadual relief terlebih dahulu sebelum mencetak!", "warning");
       return;
     }
 
@@ -741,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     let html = `
-      <!-- ================= BAHAGIAN 1: SLIP GURU GANTI INDIVIDU (POTONGAN 4 SEHELAI) ================= -->
+      <!-- BAHAGIAN 1: SLIP GURU GANTI INDIVIDU -->
       <div class="print-page-break">
         <div class="text-center font-bold text-sm uppercase mb-4 text-slate-800 border-b pb-2">
           SLIP PEMBERITAHUAN GURU GANTI (RELIEF) • SEKOLAH KEBANGSAAN RANGGU, TAWAU
@@ -793,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- ================= BAHAGIAN 2: PENYATA JADUAL GURU GANTI HARIAN (PAPAN NOTIS & ARKIB) ================= -->
+      <!-- BAHAGIAN 2: PENYATA JADUAL GURU GANTI HARIAN -->
       <div class="print-page-break pt-6">
         <div class="flex items-center justify-between border-b-2 border-slate-800 pb-3 mb-4">
           <div class="flex items-center gap-3">
@@ -811,13 +1134,11 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <!-- Senarai Guru Tidak Hadir -->
         <div class="mb-3 p-2 bg-slate-50 border border-slate-300 rounded text-xs">
           <strong>SENARAI GURU TIDAK HADIR:</strong> 
           ${engine.absentTeachers.map(a => `${a.name} (${a.reasonLabel})`).join('; ')}
         </div>
 
-        <!-- Jadual Ringkasan Penggantian -->
         <table class="kpm-table mb-6">
           <thead>
             <tr>
@@ -849,7 +1170,6 @@ document.addEventListener('DOMContentLoaded', () => {
           </tbody>
         </table>
 
-        <!-- Ruang Pengesahan & Tandatangan -->
         <div class="flex justify-between pt-8 text-xs text-slate-800">
           <div class="w-64 text-center">
             Disediakan Oleh:<br><br><br>
@@ -870,24 +1190,28 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     printArea.innerHTML = html;
-
-    // Picu cetakan pelayar
     window.print();
   }
 
-  // 12. Reset
-  elBtnReset.addEventListener('click', () => {
-    if (confirm("Adakah anda pasti untuk membatalkan dan menetapkan semula jadual relief?")) {
-      engine.absentTeachers = [];
-      engine.activeAssignments = [];
-      renderAbsentChips();
-      elDraftSection.classList.add('hidden');
-      cancelReassignMode();
-      showToast("Jadual telah ditetapkan semula.", "info");
-    }
-  });
+  // 16. Reset
+  if (elBtnReset) {
+    elBtnReset.addEventListener('click', () => {
+      if (confirm("Tetapkan semula jadual relief dan kosongkan senarai guru tidak hadir?")) {
+        engine.absentTeachers = [];
+        engine.activeAssignments = [];
+        renderAbsentChips();
+        cancelReassignMode();
+        if (elGridStatusBadge) {
+          elGridStatusBadge.textContent = "JADUAL INDUK";
+          elGridStatusBadge.className = "bg-indigo-100 text-indigo-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-indigo-200";
+        }
+        renderGridView();
+        showToast("Jadual telah ditetapkan semula ke paparan normal.", "info");
+      }
+    });
+  }
 
-  // 13. Toast Notification Helper
+  // 17. Toast Helper
   function showToast(message, type = "info") {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -921,9 +1245,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3500);
   }
 
-  // Permulaan
+  // =========================================================================
+  // 18. PERMULAAN SISTEM (INITIAL RUN)
+  // =========================================================================
   initDateAndTime();
   populateDropdowns();
   renderAbsentChips();
   renderSavedRecordsTable();
+
+  // Paparkan Grid Waktu Mengajar Guru secara langsung sebaik sahaja dibuka!
+  renderGridView();
 });
