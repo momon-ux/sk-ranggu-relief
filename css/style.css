@@ -1,0 +1,245 @@
+/* CSS Tambahan & Penggayaan Jadual Relief SK Ranggu (RedPen 2.0 Style) */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --primary-purple: #4f46e5;
+  --primary-dark: #1e1b4b;
+  --primary-light: #6366f1;
+  --accent-orange: #ea580c;
+  --accent-green: #10b981;
+  --accent-blue: #2563eb;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Grid Matrix Cell Styles */
+.matrix-cell {
+  min-height: 48px;
+  transition: all 0.15s ease-in-out;
+  position: relative;
+  user-select: none;
+}
+
+/* 🟦 Blue: Kelas Sendiri */
+.cell-own-class {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: 1px solid #2563eb;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+}
+.cell-own-class:hover {
+  filter: brightness(1.05);
+}
+
+/* 🟧 Orange: Jadual Relief (Menjalankan Relief) */
+.cell-relief {
+  background-color: #f97316 !important;
+  color: #ffffff !important;
+  border: 2px solid #c2410c !important;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(234, 88, 12, 0.35);
+  cursor: pointer;
+  z-index: 10;
+}
+.cell-relief:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.5);
+}
+.cell-relief.active-selected {
+  outline: 3px solid #fbbf24;
+  outline-offset: 2px;
+  animation: pulse-ring 1.5s infinite;
+}
+
+/* 🟩 Green: Slot Sesuai & Bebas untuk Relief (Reassign Mode) */
+.cell-available-target {
+  background-color: #ecfdf5 !important;
+  border: 2px dashed #059669 !important;
+  color: #065f46 !important;
+  cursor: pointer;
+  animation: pulse-green 2s infinite ease-in-out;
+}
+.cell-available-target:hover {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+  border-style: solid !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* 🟥 Merah/Pink: Amaran Beban Berat (Baru lepas 2 jam kelas berturut-turut) */
+.cell-heavy-warning {
+  background: repeating-linear-gradient(
+    45deg,
+    #fee2e2,
+    #fee2e2 6px,
+    #fef2f2 6px,
+    #fef2f2 12px
+  );
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+/* ⬜ Neutral Free Slot */
+.cell-free-neutral {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #94a3b8;
+}
+.cell-free-neutral:hover {
+  background-color: #f8fafc;
+}
+
+/* Animations */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(234, 88, 12, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
+  }
+}
+
+@keyframes pulse-green {
+  0%, 100% {
+    background-color: #ecfdf5;
+  }
+  50% {
+    background-color: #d1fae5;
+  }
+}
+
+/* Toast Floating Notification */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  animation: slide-in 0.25s ease-out;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   STIL CETAKAN RASMI KPM & SK RANGGU (@media print)
+   ========================================================= */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Sembunyikan elemen bukan cetakan */
+  .no-print,
+  #app-sidebar,
+  #app-header,
+  #control-panel-step1,
+  #control-panel-step2,
+  #view-controls,
+  #toast-container,
+  button,
+  .btn,
+  nav {
+    display: none !important;
+  }
+
+  /* Paparkan hanya ruang cetakan rasmi */
+  #print-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print-page-break {
+    page-break-after: always;
+  }
+
+  /* Potongan Slip Guru Ganti (4 slip atas sehelai A4) */
+  .kpm-slip-box {
+    border: 1px dashed #4b5563 !important;
+    padding: 12px 16px !important;
+    margin-bottom: 14px !important;
+    page-break-inside: avoid !important;
+    background: #ffffff !important;
+  }
+
+  .kpm-slip-cut-line {
+    border-top: 1px dashed #6b7280;
+    margin: 10px 0;
+    text-align: center;
+    position: relative;
+  }
+  .kpm-slip-cut-line span {
+    background: #ffffff;
+    padding: 0 8px;
+    font-size: 8pt;
+    color: #6b7280;
+    position: relative;
+    top: -9px;
+  }
+
+  table.kpm-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  table.kpm-table th,
+  table.kpm-table td {
+    border: 1px solid #1f2937 !important;
+    padding: 5px 8px !important;
+    font-size: 9.5pt !important;
+  }
+  table.kpm-table th {
+    background-color: #f3f4f6 !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+    text-align: center !important;
+  }
+}
