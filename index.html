@@ -474,15 +474,24 @@
               </button>
             </div>
 
-            <!-- Penapis Sesi & Carian Guru -->
+            <!-- Penapis Sesi (Pagi vs Petang vs Keseluruhan) & Carian Guru -->
             <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <div class="flex items-center gap-2">
-                <label class="text-[11px] font-bold text-slate-600 uppercase">Tapis Sesi Grid:</label>
-                <select id="filter-grid-session" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold">
-                  <option value="Semua">Semua Sesi (54 Guru)</option>
-                  <option value="Pagi" selected>Sesi Pagi Sahaja</option>
-                  <option value="Petang">Sesi Petang Sahaja</option>
-                </select>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[11px] font-extrabold text-slate-700 uppercase">Pilih Sesi Persekolahan:</span>
+                <div id="session-tab-group" class="inline-flex flex-wrap rounded-xl bg-slate-200/80 p-1 gap-1 text-xs font-bold">
+                  <button type="button" data-session="Pagi" class="session-tab-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-sun text-amber-300"></i>
+                    <span>Sesi Pagi (06:40 - 12:30)</span>
+                  </button>
+                  <button type="button" data-session="Petang" class="session-tab-btn px-3 py-1.5 rounded-lg bg-transparent hover:bg-white/80 text-slate-700 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-sun text-orange-400"></i>
+                    <span>Sesi Petang (12:30 - 05:50)</span>
+                  </button>
+                  <button type="button" data-session="Semua" class="session-tab-btn px-3 py-1.5 rounded-lg bg-transparent hover:bg-white/80 text-slate-700 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-school text-indigo-600"></i>
+                    <span>Keseluruhan (Pagi + Petang)</span>
+                  </button>
+                </div>
               </div>
 
               <div class="relative w-64">

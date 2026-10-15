@@ -88,12 +88,13 @@ class SKRangguReliefEngine {
     this.absentTeachers = this.absentTeachers.filter(a => a.teacherId !== teacherId);
   }
 
-  // Cari semua jadual guru pada hari & waktu tertentu
-  getTeacherClassAtSlot(teacherName, dayCode, waktu) {
+  // Cari semua jadual guru pada hari & waktu tertentu (mengambil kira sesi pagi/petang)
+  getTeacherClassAtSlot(teacherName, dayCode, waktu, sesi = null) {
     return this.timetableData.find(item => 
       item.kodHari === dayCode && 
       item.waktu === waktu && 
-      this.isSameTeacher(item.guru, teacherName)
+      this.isSameTeacher(item.guru, teacherName) &&
+      (!sesi || !item.sesi || item.sesi === sesi)
     );
   }
 
@@ -152,6 +153,7 @@ class SKRangguReliefEngine {
           kelas: item.kelas,
           subjek: item.subjek,
           paparan: item.paparan,
+          sesi: item.sesi || "Pagi",
           originalGuru: matchingAbsent.name,
           originalGuruShort: matchingAbsent.shortName,
           originalGuruId: matchingAbsent.teacherId,
@@ -188,6 +190,9 @@ class SKRangguReliefEngine {
       this.teachersList.forEach(t => {
         // Abaikan guru tidak hadir
         if (absentTeacherIds.has(t.id)) return;
+
+        // Guru mesti berada dalam sesi yang sama (Pagi ganti Pagi, Petang ganti Petang)
+        if (t.session && slot.sesi && t.session !== slot.sesi) return;
 
         // Abaikan jika melebihi had kuota relief
         const currentCount = teacherReliefCounts[t.id] || 0;
@@ -273,7 +278,7 @@ class SKRangguReliefEngine {
 
   // Dapatkan senarai guru yang LAPANG (FREE) untuk slot tertentu
   // Digunakan untuk fungsi interaktif "Pindah Relief" dalam Grid Berwarna!
-  getAvailableTeachersForSlot(waktu, dayCode = this.selectedDayCode, currentReliefId = null) {
+  getAvailableTeachersForSlot(waktu, dayCode = this.selectedDayCode, currentReliefId = null, slotSesi = null) {
     const absentTeacherIds = new Set(this.absentTeachers.map(a => a.teacherId));
     const results = [];
 
@@ -281,8 +286,11 @@ class SKRangguReliefEngine {
       // Guru tidak hadir tidak layak
       if (absentTeacherIds.has(t.id)) return;
 
+      // Guru mesti dalam sesi yang sama jika dinyatakan
+      if (slotSesi && t.session && t.session !== slotSesi) return;
+
       // Semak jika ada kelas sendiri
-      const ownClass = this.getTeacherClassAtSlot(t.name, dayCode, waktu);
+      const ownClass = this.getTeacherClassAtSlot(t.name, dayCode, waktu, slotSesi || t.session);
       if (ownClass) return; // Sedang mengajar kelas sendiri (Biru)
 
       // Semak jika sudah ada relief lain pada waktu ini (selain relief yang sedang dipinda)
